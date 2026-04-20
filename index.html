@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HSM Command Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0a0d0f;
+  --bg2:     #111518;
+  --bg3:     #181d22;
+  --panel:   #1a2030;
+  --border:  #1e3a2a;
+  --green:   #00ff88;
+  --green2:  #00cc66;
+  --green3:  #004422;
+  --amber:   #ffb700;
+  --red:     #ff4455;
+  --blue:    #00aaff;
+  --text:    #c8d8c0;
+  --dim:     #4a6050;
+  --mono:    'Share Tech Mono', monospace;
+  --display: 'Orbitron', sans-serif;
+  --body:    'Exo 2', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--body); min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,136,.015) 2px, rgba(0,255,136,.015) 4px);
+  pointer-events: none; z-index: 9999;
+}
+header {
+  border-bottom: 1px solid var(--border); padding: 16px 28px;
+  display: flex; align-items: center; justify-content: space-between; background: var(--bg2);
+}
+.logo { font-family: var(--display); font-size: 18px; font-weight: 900; color: var(--green); letter-spacing: 3px; }
+.logo span { color: var(--amber); }
+.status-bar { font-family: var(--mono); font-size: 11px; color: var(--dim); display: flex; gap: 20px; flex-wrap: wrap; }
+.status-bar b { color: var(--green); }
+nav { display: flex; gap: 2px; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 24px; flex-wrap: wrap; }
+.tab {
+  padding: 12px 20px; font-family: var(--mono); font-size: 12px;
+  color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all .2s; letter-spacing: 1px; user-select: none;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--green); border-bottom-color: var(--green); }
+main { padding: 28px; max-width: 1000px; margin: 0 auto; }
+.section-header { margin-bottom: 24px; }
+.section-header h2 { font-family: var(--display); font-size: 14px; letter-spacing: 3px; color: var(--green); }
+.section-header p  { font-size: 13px; color: var(--dim); margin-top: 4px; }
+.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 16px; }
+.card-area { perspective: 1200px; margin: 0 auto 24px; max-width: 620px; }
+.card-scene { width: 100%; height: 220px; cursor: pointer; }
+.card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.4,0,.2,1); }
+.card-scene.flipped .card-inner { transform: rotateY(180deg); }
+.card-face {
+  position: absolute; inset: 0; backface-visibility: hidden; border-radius: 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 28px; border: 1px solid var(--border);
+}
+.card-front { background: linear-gradient(135deg, #0d1f14 0%, #0a1a0f 100%); border-color: var(--green3); }
+.card-back { background: linear-gradient(135deg, #1a1300 0%, #110e00 100%); border-color: #3a2800; transform: rotateY(180deg); }
+.card-code { font-family: var(--display); font-size: 64px; font-weight: 900; color: var(--green); letter-spacing: 8px; line-height: 1; text-shadow: 0 0 30px rgba(0,255,136,.4); }
+.card-hint { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-top: 16px; letter-spacing: 1px; }
+.card-name { font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--amber); text-align: center; letter-spacing: 2px; margin-bottom: 8px; }
+.card-cat  { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-bottom: 12px; letter-spacing: 1px; }
+.card-desc { font-size: 13px; color: var(--text); text-align: center; line-height: 1.6; max-width: 420px; }
+.card-fmt  { font-family: var(--mono); font-size: 10px; color: #3a6040; margin-top: 10px; text-align: center; word-break: break-all; }
+.card-controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  padding: 8px 20px; border-radius: 3px; cursor: pointer; border: 1px solid;
+  transition: all .15s; user-select: none;
+}
+.btn-green { color: var(--green); border-color: var(--green3); background: transparent; }
+.btn-green:hover { background: var(--green3); }
+.btn-dim   { color: var(--dim); border-color: #1a2020; background: transparent; }
+.btn-dim:hover { color: var(--text); border-color: var(--dim); }
+.card-progress { font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: center; margin-bottom: 16px; }
+.card-progress b { color: var(--green); }
+.filter-row, .quiz-mode-row, .cat-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.filter-chip {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .5px;
+  padding: 4px 12px; border-radius: 2px; cursor: pointer; border: 1px solid var(--border);
+  color: var(--dim); background: transparent; transition: all .15s; user-select: none;
+}
+.filter-chip.on { color: var(--green); border-color: var(--green3); background: var(--green3); }
+.quiz-question { font-family: var(--display); font-size: 13px; letter-spacing: 2px; color: var(--dim); margin-bottom: 8px; }
+.quiz-prompt { font-size: 18px; color: var(--text); margin-bottom: 4px; line-height: 1.5; }
+.quiz-cat { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-bottom: 24px; }
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.quiz-opt {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .5px; padding: 14px 16px;
+  border-radius: 3px; cursor: pointer; border: 1px solid var(--border); background: var(--bg3);
+  color: var(--text); transition: all .15s; text-align: left;
+}
+.quiz-opt:hover:not(.locked) { border-color: var(--green3); color: var(--green); }
+.quiz-opt.correct { border-color: var(--green); color: var(--green); background: var(--green3); }
+.quiz-opt.wrong { border-color: var(--red); color: var(--red); background: #1a0508; }
+.quiz-opt.reveal { border-color: var(--amber); color: var(--amber); }
+.quiz-opt.locked { cursor: default; }
+.quiz-feedback { font-size: 13px; min-height: 40px; line-height: 1.6; }
+.quiz-feedback.ok { color: var(--green); }
+.quiz-feedback.bad { color: var(--red); }
+.score-row { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+.score-box { flex: 1; min-width: 100px; text-align: center; padding: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; }
+.score-num { font-family: var(--display); font-size: 28px; font-weight: 700; }
+.score-lbl { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-top: 2px; letter-spacing: 1px; }
+.terminal {
+  background: #050a05; border: 1px solid #1a2a1a; border-radius: 4px;
+  font-family: var(--mono); font-size: 12px; padding: 16px; min-height: 320px; max-height: 420px; overflow-y: auto; margin-bottom: 12px;
+}
+.t-line { margin-bottom: 4px; line-height: 1.7; }
+.t-prompt { color: var(--green2); }
+.t-output { color: var(--text); }
+.t-info { color: var(--dim); }
+.t-ok { color: var(--green); }
+.t-err { color: var(--red); }
+.t-amber { color: var(--amber); }
+.terminal-input-row { display: flex; gap: 8px; }
+.terminal-input-row span { font-family: var(--mono); font-size: 12px; color: var(--green2); padding: 8px 0; white-space: nowrap; }
+#term-input {
+  flex: 1; background: #050a05; border: 1px solid #1a2a1a; border-radius: 3px;
+  font-family: var(--mono); font-size: 12px; color: var(--green); padding: 8px 10px; outline: none;
+}
+#term-input:focus { border-color: var(--green3); }
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.ref-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 12px; cursor: pointer; transition: all .15s; }
+.ref-card:hover { border-color: var(--green3); }
+.ref-card-code { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--green); letter-spacing: 3px; }
+.ref-card-name { font-size: 11px; color: var(--text); margin-top: 4px; line-height: 1.4; }
+.ref-detail { display: none; background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 18px; margin-top: 12px; }
+.ref-detail.show { display: block; }
+.ref-detail h3 { font-family: var(--display); font-size: 13px; letter-spacing: 2px; color: var(--amber); margin-bottom: 12px; }
+.ref-detail .field { margin-bottom: 10px; }
+.ref-detail .field-label { font-family: var(--mono); font-size: 10px; color: var(--dim); letter-spacing: 1px; margin-bottom: 3px; }
+.ref-detail .field-val { font-family: var(--mono); font-size: 11px; color: var(--text); line-height: 1.6; word-break: break-all; }
+.progress-bar { height: 3px; background: var(--bg3); border-radius: 99px; margin: 12px 0; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); border-radius: 99px; transition: width .4s ease; }
+.page { display: none; }
+.page.active { display: block; }
+.cat-tag { display: inline-block; font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 2px; letter-spacing: .5px; background: var(--green3); color: var(--green); }
+.cat-tag.key  { background: #002830; color: #00aacc; }
+.cat-tag.enc  { background: #2a1a00; color: var(--amber); }
+.cat-tag.rsa  { background: #200010; color: #ff44aa; }
+.cat-tag.mac  { background: #00103a; color: var(--blue); }
+.cat-tag.visa { background: #2a0015; color: #ff6699; }
+.cat-tag.cvv  { background: #1a0800; color: #ff8855; }
+.cat-tag.diag { background: #0a1a00; color: #88cc00; }
+.cat-tag.exp  { background: #1a1a00; color: #cccc00; }
+.tip-box {
+  border-left: 2px solid var(--amber); padding: 12px 16px; background: #0f0c00;
+  border-radius: 0 3px 3px 0; margin-bottom: 16px; font-size: 12px; color: var(--text); line-height: 1.7;
+}
+.tip-box b { color: var(--amber); font-weight: 600; }
+@media (max-width: 768px) {
+  .quiz-options { grid-template-columns: 1fr; }
+  header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">HSM<span>//</span>TRAINER</div>
+  <div class="status-bar">
+    <span>MODEL: <b>THALES payShield 9K/10K</b></span>
+    <span>PROTO: <b>HOST CMD v2</b></span>
+    <span>PORT: <b>1500/1501</b></span>
+    <span>CMDS: <b>40</b></span>
+  </div>
+</header>
+<nav>
+  <div class="tab active" onclick="showPage('flashcard')">[ FLASHCARD ]</div>
+  <div class="tab" onclick="showPage('quiz')">[ QUIZ ]</div>
+  <div class="tab" onclick="showPage('terminal')">[ SIMULATOR ]</div>
+  <div class="tab" onclick="showPage('reference')">[ REFERENCE ]</div>
+</nav>
+<main>
+<div id="page-flashcard" class="page active">
+  <div class="section-header"><h2>// FLASHCARD MODE</h2><p>Klik kartu untuk flip — hafal command code dan fungsinya</p></div>
+  <div class="filter-row" id="fc-filters">
+    <div class="filter-chip on" data-cat="ALL" onclick="fcFilter(this)">ALL</div>
+    <div class="filter-chip" data-cat="PIN" onclick="fcFilter(this)">PIN</div>
+    <div class="filter-chip" data-cat="Key Management" onclick="fcFilter(this)">KEY MGMT</div>
+    <div class="filter-chip" data-cat="Encryption" onclick="fcFilter(this)">ENCRYPTION</div>
+    <div class="filter-chip" data-cat="RSA" onclick="fcFilter(this)">RSA</div>
+    <div class="filter-chip" data-cat="MAC" onclick="fcFilter(this)">MAC</div>
+    <div class="filter-chip" data-cat="VISA/PVV" onclick="fcFilter(this)">VISA</div>
+    <div class="filter-chip" data-cat="CVV" onclick="fcFilter(this)">CVV</div>
+    <div class="filter-chip" data-cat="Diagnostics" onclick="fcFilter(this)">DIAG</div>
+    <div class="filter-chip" data-cat="impl" onclick="fcFilter(this)">★ EMULATOR</div>
+  </div>
+  <div class="card-progress">CARD <b id="fc-cur">1</b> / <b id="fc-tot">40</b></div>
+  <div class="progress-bar"><div class="progress-fill" id="fc-prog" style="width:2.5%"></div></div>
+  <div class="card-area">
+    <div class="card-scene" id="fc-scene" onclick="fcFlip()"><div class="card-inner">
+      <div class="card-face card-front"><div class="card-code" id="fc-code">JA</div><div class="card-hint">↑ klik untuk lihat jawaban</div></div>
+      <div class="card-face card-back"><div class="card-name" id="fc-name">—</div><div class="card-cat" id="fc-cat">—</div><div class="card-desc" id="fc-desc">—</div><div class="card-fmt" id="fc-fmt">—</div></div>
+    </div></div>
+  </div>
+  <div class="card-controls"><div class="btn btn-dim" onclick="fcPrev()">◀ PREV</div><div class="btn btn-dim" onclick="fcShuffle()">⇌ SHUFFLE</div><div class="btn btn-green" onclick="fcNext()">NEXT ▶</div></div>
+</div>
+<div id="page-quiz" class="page">
+  <div class="section-header"><h2>// QUIZ MODE</h2><p>Uji pengetahuanmu — pilih mode quiz di bawah</p></div>
+  <div class="score-row">
+    <div class="score-box"><div class="score-num" id="q-score" style="color:var(--green)">0</div><div class="score-lbl">CORRECT</div></div>
+    <div class="score-box"><div class="score-num" id="q-wrong" style="color:var(--red)">0</div><div class="score-lbl">WRONG</div></div>
+    <div class="score-box"><div class="score-num" id="q-streak" style="color:var(--amber)">0</div><div class="score-lbl">STREAK</div></div>
+    <div class="score-box"><div class="score-num" id="q-total" style="color:var(--dim)">0</div><div class="score-lbl">TOTAL</div></div>
+  </div>
+  <div class="quiz-mode-row"><div class="filter-chip on" data-qm="code2name" onclick="setQMode(this)">CODE → NAMA</div><div class="filter-chip" data-qm="name2code" onclick="setQMode(this)">NAMA → CODE</div><div class="filter-chip" data-qm="desc2code" onclick="setQMode(this)">DESKRIPSI → CODE</div></div>
+  <div class="panel"><div class="quiz-question" id="q-label">QUESTION 1</div><div class="quiz-prompt" id="q-prompt">Apa nama command dengan kode ini?</div><div class="quiz-cat" id="q-cat-hint"></div><div class="quiz-options" id="q-options"></div><div class="quiz-feedback" id="q-feedback"></div><div class="progress-bar"><div class="progress-fill" id="q-prog" style="width:0%"></div></div><div style="margin-top:12px;text-align:right"><div class="btn btn-green" onclick="nextQuestion()">NEXT ▶</div></div></div>
+</div>
+<div id="page-terminal" class="page">
+  <div class="section-header"><h2>// COMMAND SIMULATOR</h2><p>Ketik command HSM dan lihat format & response-nya. Ketik <code style="color:var(--green)">help</code> untuk mulai.</p></div>
+  <div class="terminal" id="terminal">
+    <div class="t-line t-ok">╔══════════════════════════════════════════╗</div>
+    <div class="t-line t-ok">║  Thales payShield HSM Simulator v1.0     ║</div>
+    <div class="t-line t-ok">║  Port: 1500  LMK: OK  Status: AUTHORIZED ║</div>
+    <div class="t-line t-ok">╚══════════════════════════════════════════╝</div>
+    <div class="t-line t-info">Type 'help' to see available commands</div>
+    <div class="t-line">&nbsp;</div>
+  </div>
+  <div class="terminal-input-row"><span>HSM&gt;</span><input id="term-input" type="text" placeholder="e.g. JA, NC, help, list ..." autocomplete="off" onkeydown="termKey(event)"><div class="btn btn-green" onclick="termSubmit()">SEND</div></div>
+</div>
+<div id="page-reference" class="page">
+  <div class="section-header"><h2>// QUICK REFERENCE</h2><p>Klik card untuk lihat detail format request/response</p></div>
+  <div class="cat-filter" id="ref-filters">
+    <div class="filter-chip on" data-rcat="ALL" onclick="refFilter(this)">ALL</div><div class="filter-chip" data-rcat="PIN" onclick="refFilter(this)">PIN</div><div class="filter-chip" data-rcat="Key Management" onclick="refFilter(this)">KEY MGMT</div><div class="filter-chip" data-rcat="Key Export/Import" onclick="refFilter(this)">KEY EXP/IMP</div><div class="filter-chip" data-rcat="Encryption" onclick="refFilter(this)">ENCRYPTION</div><div class="filter-chip" data-rcat="RSA" onclick="refFilter(this)">RSA</div><div class="filter-chip" data-rcat="MAC" onclick="refFilter(this)">MAC</div><div class="filter-chip" data-rcat="VISA/PVV" onclick="refFilter(this)">VISA/PVV</div><div class="filter-chip" data-rcat="CVV" onclick="refFilter(this)">CVV</div><div class="filter-chip" data-rcat="Diagnostics" onclick="refFilter(this)">DIAG</div>
+  </div>
+  <div class="ref-detail" id="ref-detail"></div><div class="ref-grid" id="ref-grid"></div>
+</div>
+</main>
+<script>
+const CMDS = [
+  {code:"JA",name:"Generate Random PIN",cat:"PIN",desc:"Generate PIN random untuk account number dengan panjang PIN tertentu",req:"Header(4) | 'JA' | AccountNumber(12) | PINLength(2)",res:"Header(4) | 'JB' | ErrorCode(2) | PIN",impl:true,notes:"Response code: JB"},
+  {code:"JC",name:"Generate PIN (User Supplied)",cat:"PIN",desc:"Enkripsi PIN yang disuplai user di bawah LMK",req:"Header(4) | 'JC' | PINLength(2) | PIN | AccountNumber(12)",res:"Header(4) | 'JD' | ErrorCode(2) | EncryptedPIN",impl:false,notes:"PIN diinput manual"},
+  {code:"JE",name:"Translate PIN ZPK → LMK",cat:"PIN",desc:"Translate PIN block terenkripsi ZPK ke enkripsi LMK",req:"Header(4) | 'JE' | ZPK | PINBlock(16) | PINBlockFormat(2) | AccountNumber(12)",res:"Header(4) | 'JF' | ErrorCode(2) | EncryptedPIN",impl:true,notes:""},
+  {code:"CC",name:"Translate PIN ZPK → ZPK",cat:"PIN",desc:"Re-enkripsi PIN block dari satu ZPK ke ZPK lain",req:"Header(4) | 'CC' | SrcZPK | DstZPK | MaxPINLen(2) | PINBlock(16) | SrcFormat(2) | DstFormat(2) | AccountNumber(12)",res:"Header(4) | 'CD' | ErrorCode(2) | PINLen(2) | PINBlock(16) | Format(2)",impl:true,notes:""},
+  {code:"EA",name:"Verify Interchange PIN (IBM)",cat:"PIN",desc:"Verifikasi PIN kartu menggunakan IBM offset method",req:"Header(4) | 'EA' | ZPK | PVK | MaxPINLen(2) | PINBlock(16) | Format(2) | CheckLen(2) | AccountNumber(12) | DecTable(16) | PINValidData(12) | Offset(12)",res:"Header(4) | 'EB' | ErrorCode(2)",impl:true,notes:""},
+  {code:"CW",name:"Generate CVV/CVV2",cat:"CVV",desc:"Generate Card Verification Value untuk kartu debit/kredit",req:"Header(4) | 'CW' | CVKa | CVKb | PAN(12-19) | ExpDate(4) | ServiceCode(3)",res:"Header(4) | 'CX' | ErrorCode(2) | CVV(3)",impl:false,notes:"CVK = Card Verification Key pair"},
+  {code:"FA",name:"Translate ZPK ZMK → LMK",cat:"Key Management",desc:"Translate Zone PIN Key dari enkripsi ZMK ke enkripsi LMK",req:"Header(4) | 'FA' | ZMK | ZPK",res:"Header(4) | 'FB' | ErrorCode(2) | ZPK_LMK | KCV",impl:true,notes:""},
+  {code:"IA",name:"Generate ZPK",cat:"Key Management",desc:"Generate Zone PIN Key baru di bawah ZMK dan LMK",req:"Header(4) | 'IA' | ZMK",res:"Header(4) | 'IB' | ErrorCode(2) | ZPK_ZMK | ZPK_LMK | KCV",impl:true,notes:""},
+  {code:"A0",name:"Generate DEK",cat:"Key Management",desc:"Generate Data Encryption Key",req:"Header(4) | 'A0' | ZMK",res:"Header(4) | 'A1' | ErrorCode(2) | DEK_LMK | DEK_ZMK | KCV",impl:true,notes:""},
+  {code:"GI",name:"Import DES Key (RSA-wrapped)",cat:"Key Export/Import",desc:"Import DES key yang di-wrap dengan RSA public key",req:"Header(4) | 'GI' | EncID(2) | PadMode(2)",res:"Header(4) | 'GJ' | ErrorCode(2) | Key_LMK | KCV",impl:true,notes:""},
+  {code:"GK",name:"Export DES Key under RSA",cat:"Key Export/Import",desc:"Export DES key dienkripsi dengan RSA public key",req:"Header(4) | 'GK' | EncID(2) | PadMode(2)",res:"Header(4) | 'GL' | ErrorCode(2) | RSAEncKeyLen(4) | RSAEncKey | KCV",impl:true,notes:""},
+  {code:"M0",name:"DES Encrypt",cat:"Encryption",desc:"Enkripsi data dengan DES/3DES",req:"Header(4) | 'M0' | Mode(2) | KeyType(1)",res:"Header(4) | 'M1' | ErrorCode(2) | EncryptedData",impl:true,notes:""},
+  {code:"M2",name:"DES Decrypt",cat:"Encryption",desc:"Dekripsi data dengan DES/3DES",req:"Header(4) | 'M2' | Mode(2) | KeyType(1)",res:"Header(4) | 'M3' | ErrorCode(2) | DecryptedData",impl:true,notes:""},
+  {code:"MS",name:"Generate MAC",cat:"MAC",desc:"Generate Message Authentication Code",req:"Header(4) | 'MS' | BlockNum(1)",res:"Header(4) | 'MT' | ErrorCode(2) | MAC(16)",impl:true,notes:""},
+  {code:"SA",name:"Generate RSA Key Set",cat:"RSA",desc:"Generate RSA key pair (public + private)",req:"Header(4) | 'SA' | KeyType(1) | KeyLength(4)",res:"Header(4) | 'SB' | ErrorCode(2) | PublicKey | PrivateKey",impl:true,notes:""},
+  {code:"NC",name:"Perform Diagnostics",cat:"Diagnostics",desc:"Cek status HSM, LMK check value, versi firmware",req:"Header(4) | 'NC'",res:"Header(4) | 'ND' | ErrorCode(2) | LMKCheckValue(16) | FirmwareVersion",impl:false,notes:""},
+  {code:"NO",name:"Network Configuration",cat:"Diagnostics",desc:"Set atau get konfigurasi network HSM",req:"Header(4) | 'NO' | ConfigData",res:"Header(4) | 'NP' | ErrorCode(2) | ConfigData",impl:false,notes:""}
+];
+const catClass = {"PIN":"","Key Management":"key","Key Export/Import":"exp","Encryption":"enc","RSA":"rsa","MAC":"mac","VISA/PVV":"visa","CVV":"cvv","Diagnostics":"diag"};
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => { if (t.textContent.toLowerCase().includes(id.substring(0,4))) t.classList.add('active'); });
+  if (id === 'reference') buildRefGrid('ALL');
+  if (id === 'quiz') initQuiz();
+}
+let fcList = [...CMDS], fcIdx = 0, fcFlipped = false;
+function fcFilter(el){document.querySelectorAll('#fc-filters .filter-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');const cat=el.dataset.cat;if(cat==='ALL')fcList=[...CMDS];else if(cat==='impl')fcList=CMDS.filter(c=>c.impl);else fcList=CMDS.filter(c=>c.cat===cat);fcIdx=0;fcFlipped=false;document.getElementById('fc-scene').classList.remove('flipped');fcRender();}
+function fcRender(){const c=fcList[fcIdx]||CMDS[0];document.getElementById('fc-code').textContent=c.code;document.getElementById('fc-name').textContent=c.name;document.getElementById('fc-cat').textContent=c.cat+(c.impl?'  ★ in emulator':'');document.getElementById('fc-desc').textContent=c.desc;document.getElementById('fc-fmt').textContent='REQ: '+c.req;document.getElementById('fc-cur').textContent=fcIdx+1;document.getElementById('fc-tot').textContent=fcList.length;document.getElementById('fc-prog').style.width=((fcIdx+1)/Math.max(fcList.length,1)*100)+'%';document.getElementById('fc-scene').classList.toggle('flipped',fcFlipped);}
+function fcFlip(){fcFlipped=!fcFlipped;document.getElementById('fc-scene').classList.toggle('flipped',fcFlipped);}function fcNext(){if(!fcList.length)return;fcFlipped=false;fcIdx=(fcIdx+1)%fcList.length;fcRender();}function fcPrev(){if(!fcList.length)return;fcFlipped=false;fcIdx=(fcIdx-1+fcList.length)%fcList.length;fcRender();}function fcShuffle(){for(let i=fcList.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcList[i],fcList[j]]=[fcList[j],fcList[i]];}fcIdx=0;fcFlipped=false;fcRender();}
+let qScore=0,qWrong=0,qStreak=0,qTotal=0,qMode='code2name',qAsked=0,qCurrentCmd=null,qCorrectIdx=0,qLocked=false;
+function setQMode(el){document.querySelectorAll('.quiz-mode-row .filter-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');qMode=el.dataset.qm;nextQuestion();}
+function initQuiz(){qScore=0;qWrong=0;qStreak=0;qTotal=0;qAsked=0;updateScores();nextQuestion();}
+function updateScores(){document.getElementById('q-score').textContent=qScore;document.getElementById('q-wrong').textContent=qWrong;document.getElementById('q-streak').textContent=qStreak;document.getElementById('q-total').textContent=qTotal;document.getElementById('q-prog').style.width=qTotal?(qScore/qTotal*100)+'%':'0%';}
+function nextQuestion(){qLocked=false;qAsked++;document.getElementById('q-label').textContent='QUESTION '+qAsked;document.getElementById('q-feedback').textContent='';document.getElementById('q-feedback').className='quiz-feedback';const shuffled=[...CMDS].sort(()=>Math.random()-.5);qCurrentCmd=shuffled[0];const wrong3=shuffled.slice(1,4);const opts=[qCurrentCmd,...wrong3].sort(()=>Math.random()-.5);qCorrectIdx=opts.indexOf(qCurrentCmd);let prompt='',hint='';if(qMode==='code2name'){prompt=`Command code <b style="color:var(--green);font-size:1.4em;font-family:var(--mono)">${qCurrentCmd.code}</b> adalah?`;hint=qCurrentCmd.cat;}else if(qMode==='name2code'){prompt=`Apa kode untuk command: <b style="color:var(--amber)">${qCurrentCmd.name}</b>?`;hint=qCurrentCmd.cat;}else{prompt=`"${qCurrentCmd.desc}" — command apakah ini?`;hint=qCurrentCmd.cat;}document.getElementById('q-prompt').innerHTML=prompt;document.getElementById('q-cat-hint').textContent='Kategori: '+hint;const container=document.getElementById('q-options');container.innerHTML='';opts.forEach((cmd,i)=>{const div=document.createElement('div');div.className='quiz-opt';div.textContent=qMode==='name2code'?cmd.code:(qMode==='code2name'?cmd.name:cmd.code+' — '+cmd.name);div.onclick=()=>selectAnswer(i,div);container.appendChild(div);});}
+function selectAnswer(idx,el){if(qLocked)return;qLocked=true;qTotal++;const opts=document.querySelectorAll('.quiz-opt');opts.forEach(o=>o.classList.add('locked'));if(idx===qCorrectIdx){el.classList.add('correct');qScore++;qStreak++;document.getElementById('q-feedback').textContent='Benar! — '+qCurrentCmd.desc;document.getElementById('q-feedback').className='quiz-feedback ok';}else{el.classList.add('wrong');opts[qCorrectIdx].classList.add('reveal');qWrong++;qStreak=0;document.getElementById('q-feedback').textContent='Salah — Jawaban: '+qCurrentCmd.code+' = '+qCurrentCmd.name;document.getElementById('q-feedback').className='quiz-feedback bad';}updateScores();}
+const termEl=document.getElementById('terminal');let termHistory=[],termHistIdx=-1;function termLine(cls,text){const d=document.createElement('div');d.className='t-line '+cls;d.innerHTML=text;termEl.appendChild(d);termEl.scrollTop=termEl.scrollHeight;}function termKey(e){if(e.key==='Enter')termSubmit();if(e.key==='ArrowUp'){if(termHistIdx<termHistory.length-1){termHistIdx++;document.getElementById('term-input').value=termHistory[termHistIdx];}}if(e.key==='ArrowDown'){if(termHistIdx>0){termHistIdx--;document.getElementById('term-input').value=termHistory[termHistIdx];}else{termHistIdx=-1;document.getElementById('term-input').value='';}}}
+function termSubmit(){const inp=document.getElementById('term-input');const raw=inp.value.trim();if(!raw)return;termHistory.unshift(raw);termHistIdx=-1;inp.value='';termLine('t-prompt','HSM&gt; '+raw);const cmd=raw.toUpperCase();if(cmd==='HELP'){termLine('t-info','Ketik kode command (contoh: JA), list, quiz, atau clear.');termLine('','');return;}if(cmd==='CLEAR'){termEl.innerHTML='';return;}if(cmd==='LIST'){CMDS.forEach(c=>termLine('t-output',`${c.code} — ${c.name} [${c.cat}]`));termLine('','');return;}if(cmd==='QUIZ'){const r=CMDS[Math.floor(Math.random()*CMDS.length)];termLine('t-output',`Command code: ${r.code} — apa namanya?`);termLine('t-ok',`Jawaban: ${r.name}`);termLine('','');return;}const found=CMDS.find(c=>c.code===cmd);if(found){const resCode=found.code[0]+String.fromCharCode(found.code.charCodeAt(1)+1);termLine('t-output',`Code: ${found.code} → Response: ${resCode}`);termLine('t-output',`Name: ${found.name}`);termLine('t-output',`Req : ${found.req}`);termLine('t-output',`Res : ${found.res}`);termLine('','');return;}termLine('t-err',`Unknown command: "${raw}". Type 'help' or 'list'.`);termLine('','');}
+function buildRefGrid(cat){const grid=document.getElementById('ref-grid');const detail=document.getElementById('ref-detail');detail.classList.remove('show');grid.innerHTML='';const list=cat==='ALL'?CMDS:CMDS.filter(c=>c.cat===cat);list.forEach(c=>{const card=document.createElement('div');card.className='ref-card';const cc=catClass[c.cat]||'';card.innerHTML=`<div class="ref-card-code">${c.code}</div><div class="ref-card-name">${c.name}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span class="cat-tag ${cc}">${c.cat}</span>${c.impl?'<span style="color:var(--green);font-size:10px;font-family:var(--mono)">★ impl</span>':''}</div>`;card.onclick=()=>showRefDetail(c);grid.appendChild(card);});}
+function showRefDetail(c){const d=document.getElementById('ref-detail');const resCode=c.code[0]+String.fromCharCode(c.code.charCodeAt(1)+1);d.innerHTML=`<h3>${c.code} — ${c.name}</h3><div class="field"><div class="field-label">DESCRIPTION</div><div class="field-val">${c.desc}</div></div><div class="field"><div class="field-label">STATUS</div><div class="field-val">${c.impl?'★ Implemented in emulator':'○ Not implemented'}</div></div><div class="field"><div class="field-label">REQUEST FORMAT</div><div class="field-val">${c.req}</div></div><div class="field"><div class="field-label">RESPONSE FORMAT (${resCode})</div><div class="field-val">${c.res}</div></div>`;d.classList.add('show');d.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function refFilter(el){document.querySelectorAll('#ref-filters .filter-chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');buildRefGrid(el.dataset.rcat);}
+fcRender();
+</script>
+</body>
+</html>
